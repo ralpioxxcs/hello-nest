@@ -4,10 +4,13 @@ import { AppService } from './app.service';
 import { PostsModule } from './posts/posts.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PostsModel } from './posts/entities/posts.entity';
+import { UsersModel } from './users/entities/users.entity';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
     PostsModule,
+    UsersModule,
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: '127.0.0.1',
@@ -17,6 +20,7 @@ import { PostsModel } from './posts/entities/posts.entity';
       database: 'postgres',
       entities: [
         PostsModel,
+        UsersModel,
       ],
       synchronize: true,
     }),

@@ -7,7 +7,6 @@ export class ProfileModel {
   id: number;
 
   @OneToOne(() => UserModel, (user) => user.profile)
-  @JoinColumn()
   user: UserModel;
 
   @Column()
