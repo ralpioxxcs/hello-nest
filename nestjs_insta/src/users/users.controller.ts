@@ -4,15 +4,17 @@ import { UsersService } from './users.service';
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
-
+  
+  /*
   @Post()
   postUser(
     @Body('nickname') nickname :string,
     @Body('email') email:string,
     @Body('password') password:string,
   ) {
-    return this.usersService.createUsers(nickname, email, password);
+    return this.usersService.createUsers({nickname, email, password});
   }
+  */
 
   @Get()
   getUsers() {

@@ -9,6 +9,7 @@ import { warn } from 'console';
   imports: [
     TypeOrmModule.forFeature([UsersModel]),
   ],
+  exports: [UsersService],
   controllers: [UsersController],
   providers: [UsersService],
 })
