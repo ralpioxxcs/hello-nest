@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, NotFoundException, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, DefaultValuePipe, Delete, Get, NotFoundException, Param, ParseIntPipe, Post, Put } from '@nestjs/common';
 import { PostsService } from './posts.service';
 
 @Controller('posts')
@@ -21,8 +21,8 @@ export class PostsController {
    *
    */
   @Get(':id')
-  getPost(@Param('id') id: string) {
-    return this.postsService.getPostById(+id);
+  getPost(@Param('id', ParseIntPipe) id: number) {
+    return this.postsService.getPostById(id);
   }
 
   /**
@@ -33,7 +33,7 @@ export class PostsController {
   postPosts(
     @Body('authorId') authorId: number,
     @Body('title') title: string,
-    @Body('content') content: string,
+    @Body('content') content: string
   ) {
     return this.postsService.createPost(authorId, title, content);
   }
@@ -44,7 +44,7 @@ export class PostsController {
    */
   @Put(':id')
   putPost(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body('title') title?: string,
     @Body('content') content?: string,
   ) {
@@ -58,7 +58,7 @@ export class PostsController {
    */
   @Delete(':id')
   deletePost(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
   ) {
     return this.postsService.deletePost(+id)
   }
