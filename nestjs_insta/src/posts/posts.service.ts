@@ -2,7 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PostsModel } from './entities/posts.entity';
-
+import { CreatePostDto } from './dto/create-post.dto';
+import { UpdatePostDto } from './dto/update-post.dto';
 // interface PostModel {
 //     id: number;
 //     author: string;
@@ -41,86 +42,84 @@ import { PostsModel } from './entities/posts.entity';
 
 @Injectable()
 export class PostsService {
-    constructor(
-        @InjectRepository(PostsModel)
-        private readonly postsRepository: Repository<PostsModel>
-    ){}
+  constructor(
+    @InjectRepository(PostsModel)
+    private readonly postsRepository: Repository<PostsModel>,
+  ) {}
 
+  async getAllPosts() {
+    return this.postsRepository.find({
+      relations: ['author'],
+    });
+  }
 
-    async getAllPosts() {
-        return this.postsRepository.find({
-            relations: ['author'],
-        });
+  async getPostById(id: number) {
+    const post = await this.postsRepository.findOne({
+      where: {
+        id,
+      },
+      relations: ['author'],
+    });
+
+    if (!post) {
+      throw new NotFoundException();
     }
 
-    async getPostById(id: number) {
-        const post = await this.postsRepository.findOne({
-            where: {
-                id,
-            },
-            relations: ['author'],
-        });
+    return post;
+  }
 
-        if(!post) {
-            throw new NotFoundException();
-        }
+  async createPost(authorId: number, postDto: CreatePostDto) {
+    const post = this.postsRepository.create({
+      author: {
+        id: authorId,
+      },
+      ...postDto,
+      likeCount: 0,
+      commentCount: 0,
+    });
 
-        return post;
+    const newPost = await this.postsRepository.save(post);
+
+    return newPost;
+  }
+
+  async updatePost(postId: number, postDto: UpdatePostDto) {
+    const {title,content} = postDto;
+
+    const post = await this.postsRepository.findOne({
+      where: {
+        id: postId,
+      },
+    });
+
+    if (!post) {
+      throw new NotFoundException();
+    }
+    if (title) {
+      post.title = title;
+    }
+    if (content) {
+      post.content = content;
     }
 
-    
-    async createPost(authorId: number, title: string, content: string) {
-        const post = this.postsRepository.create({
-            author : {
-              id: authorId
-            },
-            title,
-            content,
-            likeCount: 0,
-            commentCount: 0,
-        });
+    const newPost = await this.postsRepository.save(post);
 
-        const newPost = await this.postsRepository.save(post);
+    return newPost;
+  }
 
-        return newPost;
+  async deletePost(postId: number) {
+    const post = await this.postsRepository.findOne({
+      where: {
+        id: postId,
+      },
+    });
+
+    if (!post) {
+      throw new NotFoundException();
     }
 
-    async updatePost(postId: number, title: string, content: string) {
-        const post = await this.postsRepository.findOne({
-            where: {
-                id: postId
-            }
-        });
+    await this.postsRepository.delete(postId);
 
-        if (!post) {
-            throw new NotFoundException();
-        }
-        if(title) {
-            post.title = title;
-        }
-        if(content) {
-            post.content = content;
-        }
-
-        const newPost = await this.postsRepository.save(post);
-
-        return newPost;
-    }
-
-    async deletePost(postId: number) {
-        const post = await this.postsRepository.findOne({
-            where: {
-                id: postId
-            }
-        });
-
-        if (!post) {
-            throw new NotFoundException();
-        }
-
-        await this.postsRepository.delete(postId);
-
-        return postId;
-    }
-
+    return postId;
+  }
 }

@@ -2,7 +2,6 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UsersModel } from './entities/users.entity';
 import { Repository } from 'typeorm';
-import { warn } from 'console';
 
 @Injectable()
 export class UsersService {
@@ -17,20 +16,20 @@ export class UsersService {
     const nicknameExists = await this.usersRepository.exist({
       where: {
         nickname: user.nickname,
-      }
+      },
     });
 
-    if(nicknameExists) {
+    if (nicknameExists) {
       throw new BadRequestException('already exists nickname');
     }
 
     const emailExists = await this.usersRepository.exist({
       where: {
         email: user.email,
-      }
+      },
     });
 
-    if(emailExists) {
+    if (emailExists) {
       throw new BadRequestException('already exists email');
     }
 
@@ -41,7 +40,7 @@ export class UsersService {
     });
 
     const newUser = await this.usersRepository.save(userObject);
-  
+
     return newUser;
   }
 
@@ -56,5 +55,4 @@ export class UsersService {
       },
     });
   }
-
 }

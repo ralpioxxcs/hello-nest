@@ -1,10 +1,10 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersModel } from 'src/users/entities/users.entity';
 import { HASH_ROUNDS, JWT_SECRET } from './const/auth.const';
 import { UsersService } from 'src/users/users.service';
 
-import * as bcrypt from 'bcrypt'
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
@@ -17,7 +17,7 @@ export class AuthService {
    *      'email:password'를 base64 인코딩한 형태
    *      (ex. {authorization: 'Basic {token}'}
    *
-   *  3) 아무나 접근할 수 없는 정보 (private route)를 접근 할때는 
+   *  3) 아무나 접근할 수 없는 정보 (private route)를 접근 할때는
    *     accessToken을 Header에 추가해서 요청과 보냄
    *     (ex. {authorization: 'Bearer {token}'}
    *
@@ -26,7 +26,7 @@ export class AuthService {
    *
    *  5) 모든 토큰은 만료 기간이 존재,
    *     만료기간이 지나면 새로 토큰을 발급받아야 함
-   *     그렇지 않으면, 인증 실패 
+   *     그렇지 않으면, 인증 실패
    *     accessToken을 새로 발급받을 수 있는 /auth/token/access
    *     refreshToken을 새로 발급 받을 수 있는 /auth/token/refresh
    *
@@ -44,12 +44,12 @@ export class AuthService {
   extractTokenFromHeader(header: string, isBearer: boolean) {
     // 'Basic {token}' -> ['Basic', '{token}']
 
-    const splitToken = header.split(' ')
+    const splitToken = header.split(' ');
 
     const prefix = isBearer ? 'Bearer' : 'Basic';
 
-    if(splitToken.length !== 2 || splitToken[0] !== prefix) {
-      throw new UnauthorizedException('invalid token')
+    if (splitToken.length !== 2 || splitToken[0] !== prefix) {
+      throw new UnauthorizedException('invalid token');
     }
 
     const token = splitToken[1];
@@ -69,7 +69,7 @@ export class AuthService {
     const decoded = Buffer.from(base64String, 'base64').toString('utf8');
 
     const splitBasic = decoded.split(':');
-    if(splitBasic.length !== 2) {
+    if (splitBasic.length !== 2) {
       throw new UnauthorizedException('invalid token');
     }
 
@@ -79,7 +79,7 @@ export class AuthService {
     return {
       email: email,
       password: pw,
-    }
+    };
   }
 
   /**
@@ -87,9 +87,13 @@ export class AuthService {
    *
    */
   verifyToken(token: string) {
-    return this.jwtService.verify(token, {
-      secret: JWT_SECRET,
-    });
+    try {
+      return this.jwtService.verify(token, {
+        secret: JWT_SECRET,
+      });
+    } catch (err) {
+      throw new UnauthorizedException('token expired or invalid');
+    }
   }
 
   /**
@@ -100,18 +104,20 @@ export class AuthService {
     const decoded = this.jwtService.verify(token, {
       secret: JWT_SECRET,
     });
-  
+
     /**
      *  sub: id
      *  email: email
      *  type: 'access' | 'refresh'
      *
      **/
-    if(decoded.type !== 'refresh') {
-      throw new UnauthorizedException('refreshing token only possible with refreshToken');
+    if (decoded.type !== 'refresh') {
+      throw new UnauthorizedException(
+        'refreshing token only possible with refreshToken',
+      );
     }
 
-    return this.signToken({...decoded }, isRefreshToken,);
+    return this.signToken({ ...decoded }, isRefreshToken);
   }
 
   /**
@@ -124,7 +130,7 @@ export class AuthService {
    *   - email, password를 입력하면 사용자 검증 진행
    *   - 검증이 완료되면, accessToken, refreshToken을반환
    *
-   * 3) loginUser 
+   * 3) loginUser
    *   - (1), (2)에서 필요한 accessToken, refreshToken 을 반환
    *
    * 4) signToken
@@ -141,11 +147,11 @@ export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
     private readonly usersService: UsersService,
-  ) {};
-  
+  ) {}
+
   /**
    * Payload 정보
-   * 
+   *
    * 1) email
    * 2) sub -> id
    * 3) type: 'access' | 'refresh'
@@ -167,23 +173,25 @@ export class AuthService {
     return {
       accessToken: this.signToken(user, false),
       refreshToken: this.signToken(user, true),
-    }
+    };
   }
 
-  async authenticateWithEmailAndPassword(user: Pick<UsersModel, 'email' | 'password'>) {
+  async authenticateWithEmailAndPassword(
+    user: Pick<UsersModel, 'email' | 'password'>,
+  ) {
     // 사용자가 존재하는 확인 (email)
     const existingUser = await this.usersService.getUserByEmail(user.email);
 
-    if(!existingUser) {
+    if (!existingUser) {
       throw new UnauthorizedException('not exist user');
     }
 
     // 1. 입력된 비밀번호
     // 2. 기존 해시
-    const  passOk = await bcrypt.compare(user.password, existingUser.password);
-    if(!passOk) {
+    const passOk = await bcrypt.compare(user.password, existingUser.password);
+    if (!passOk) {
       throw new UnauthorizedException('invalid password');
-    } 
+    }
 
     return existingUser;
   }
@@ -194,7 +202,9 @@ export class AuthService {
     return this.loginUser(existingUser);
   }
 
-  async registerWithEmail(user: Pick<UsersModel, 'nickname' | 'email' | 'password' >) {
+  async registerWithEmail(
+    user: Pick<UsersModel, 'nickname' | 'email' | 'password'>,
+  ) {
     const hashed = await bcrypt.hash(
       user.password,
       HASH_ROUNDS, // https://www.npmjs.com/package/bcrypt#a-note-on-rounds

@@ -1,13 +1,13 @@
-import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { RolesEnum } from "../const/roles.const";
-import { PostsModel } from "src/posts/entities/posts.entity";
-import { BaseModel } from "src/common/entity/base.entity";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { RolesEnum } from '../const/roles.const';
+import { PostsModel } from 'src/posts/entities/posts.entity';
+import { BaseModel } from 'src/common/entity/base.entity';
 
 @Entity()
 export class UsersModel extends BaseModel {
   @PrimaryGeneratedColumn()
   id: number;
-    
+
   // 1. 최대길이 20
   // 2. 유일무이한 값
   @Column({
@@ -15,7 +15,7 @@ export class UsersModel extends BaseModel {
     unique: true,
   })
   nickname: string;
-  
+
   // 1. 유일무이한 값
   @Column({
     unique: true,
@@ -27,10 +27,10 @@ export class UsersModel extends BaseModel {
 
   @Column({
     enum: Object.values(RolesEnum),
-    default: RolesEnum.USER
+    default: RolesEnum.USER,
   })
   role: RolesEnum;
 
   @OneToMany(() => PostsModel, (post) => post.author)
   posts: PostsModel[];
-};
+}

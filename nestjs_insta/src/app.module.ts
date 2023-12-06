@@ -20,10 +20,7 @@ import { CommonModule } from './common/common.module';
       username: 'postgres',
       password: 'postgres',
       database: 'postgres',
-      entities: [
-        PostsModel,
-        UsersModel,
-      ],
+      entities: [PostsModel, UsersModel],
       synchronize: true,
     }),
     AuthModule,
@@ -32,4 +29,4 @@ import { CommonModule } from './common/common.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}
