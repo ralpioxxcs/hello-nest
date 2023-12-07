@@ -1,14 +1,15 @@
 import {
   Body,
+  ClassSerializerInterceptor,
   Controller,
   Delete,
   Get,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
-  Put,
-  Request,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { AccessTokenGuard } from 'src/auth/guard/bearer-token.guard';
@@ -58,8 +59,11 @@ export class PostsController {
    * /post/:id
    * id에 해당되는 POST를 변경
    */
-  @Put(':id')
-  putPost(@Param('id', ParseIntPipe) id: number, @Body() body: UpdatePostDto) {
+  @Patch(':id')
+  patchPost(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: UpdatePostDto,
+  ) {
     return this.postsService.updatePost(+id, body);
   }
 

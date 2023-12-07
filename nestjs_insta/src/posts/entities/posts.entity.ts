@@ -3,6 +3,7 @@ import { UsersModel } from 'src/users/entities/users.entity';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 import { IsString } from 'class-validator';
+import { stringValidationMessage } from 'src/common/validation-message/string-validation.message';
 
 @Entity()
 export class PostsModel extends BaseModel {
@@ -18,13 +19,13 @@ export class PostsModel extends BaseModel {
 
   @Column()
   @IsString({
-    message: 'content must be string type',
+    message: stringValidationMessage,
   })
   title: string;
 
   @Column()
   @IsString({
-    message: 'content must be string type',
+    message: stringValidationMessage,
   })
   content: string;
 

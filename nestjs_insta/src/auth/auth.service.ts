@@ -5,6 +5,7 @@ import { HASH_ROUNDS, JWT_SECRET } from './const/auth.const';
 import { UsersService } from 'src/users/users.service';
 
 import * as bcrypt from 'bcrypt';
+import { RegisterUserDto } from './dto/register-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -159,7 +160,7 @@ export class AuthService {
   signToken(user: Pick<UsersModel, 'email' | 'id'>, isRefreshToken: boolean) {
     const payload = {
       email: user.email,
-      sbu: user.id,
+      sub: user.id,
       type: isRefreshToken ? 'refresh' : 'access',
     };
 
@@ -202,8 +203,7 @@ export class AuthService {
     return this.loginUser(existingUser);
   }
 
-  async registerWithEmail(
-    user: Pick<UsersModel, 'nickname' | 'email' | 'password'>,
+  async registerWithEmail(user: RegisterUserDto
   ) {
     const hashed = await bcrypt.hash(
       user.password,
