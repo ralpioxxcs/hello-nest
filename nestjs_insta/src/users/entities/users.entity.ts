@@ -1,5 +1,4 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { RolesEnum } from '../const/roles.const';
 import { PostsModel } from 'src/posts/entities/posts.entity';
 import { BaseModel } from 'src/common/entity/base.entity';
 import { IsEmail, IsString, Length } from 'class-validator';
@@ -8,6 +7,7 @@ import { stringValidationMessage } from 'src/common/validation-message/string-va
 import { emailValidationMessage } from 'src/common/validation-message/email-valdation.message';
 import { Exclude, Expose } from 'class-transformer';
 import path from 'path';
+import { RolesEnum } from '../const/roles.const';
 
 @Entity()
 @Exclude()
@@ -64,7 +64,7 @@ export class UsersModel extends BaseModel {
   *     toClassOnly -> class instance로 변환될때만, request
   *     toPlainOnly -> plain obejct로 변환될때만, response
 
-  **/
+  * */
   @Exclude({
     toPlainOnly: true,
   })

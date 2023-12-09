@@ -1,10 +1,14 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersModel } from 'src/users/entities/users.entity';
-import { HASH_ROUNDS, JWT_SECRET } from './const/auth.const';
 import { UsersService } from 'src/users/users.service';
 
 import * as bcrypt from 'bcrypt';
+import { ConfigService } from '@nestjs/config';
+import {
+  ENV_HASH_ROUNDS_KEY,
+  ENV_JWT_SECRET,
+} from 'src/common/const/env-keys.consts';
 import { RegisterUserDto } from './dto/register-user.dto';
 
 @Injectable()
@@ -33,7 +37,7 @@ export class AuthService {
    *
    *  6) 토큰이 만료되면 각각의 토큰을 새로 발급 받을 수 있는 엔드포인트에 요청
    *     새로운토큰을 발급받고, private route 접근
-   **/
+   * */
 
   /**
    *  {authorization: 'Basic {token}'}
@@ -41,7 +45,7 @@ export class AuthService {
    *
    *  basic, bearer 구분하여 토큰값 추출
    *
-   **/
+   * */
   extractTokenFromHeader(header: string, isBearer: boolean) {
     // 'Basic {token}' -> ['Basic', '{token}']
 
@@ -65,7 +69,7 @@ export class AuthService {
    *    2) email:password -> [email, password]
    *    3) {email: email, password: password}
    *
-   **/
+   * */
   decodeBasicToken(base64String: string) {
     const decoded = Buffer.from(base64String, 'base64').toString('utf8');
 
@@ -78,7 +82,7 @@ export class AuthService {
     const pw = splitBasic[1];
 
     return {
-      email: email,
+      email,
       password: pw,
     };
   }
@@ -90,7 +94,7 @@ export class AuthService {
   verifyToken(token: string) {
     try {
       return this.jwtService.verify(token, {
-        secret: JWT_SECRET,
+        secret: this.configService.get<string>(ENV_JWT_SECRET),
       });
     } catch (err) {
       throw new UnauthorizedException('token expired or invalid');
@@ -100,10 +104,10 @@ export class AuthService {
   /**
    *
    *
-   **/
+   * */
   rotateToken(token: string, isRefreshToken: boolean) {
     const decoded = this.jwtService.verify(token, {
-      secret: JWT_SECRET,
+      secret: this.configService.get<string>(ENV_JWT_SECRET),
     });
 
     /**
@@ -111,7 +115,7 @@ export class AuthService {
      *  email: email
      *  type: 'access' | 'refresh'
      *
-     **/
+     * */
     if (decoded.type !== 'refresh') {
       throw new UnauthorizedException(
         'refreshing token only possible with refreshToken',
@@ -148,6 +152,7 @@ export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
     private readonly usersService: UsersService,
+    private readonly configService: ConfigService,
   ) {}
 
   /**
@@ -165,7 +170,7 @@ export class AuthService {
     };
 
     return this.jwtService.sign(payload, {
-      secret: JWT_SECRET,
+      secret: this.configService.get<string>(ENV_JWT_SECRET),
       expiresIn: isRefreshToken ? 3600 : 300,
     });
   }
@@ -203,11 +208,10 @@ export class AuthService {
     return this.loginUser(existingUser);
   }
 
-  async registerWithEmail(user: RegisterUserDto
-  ) {
+  async registerWithEmail(user: RegisterUserDto) {
     const hashed = await bcrypt.hash(
       user.password,
-      HASH_ROUNDS, // https://www.npmjs.com/package/bcrypt#a-note-on-rounds
+      parseInt(this.configService.get<string>(ENV_HASH_ROUNDS_KEY)), // https://www.npmjs.com/package/bcrypt#a-note-on-rounds
     );
 
     const newUser = await this.usersService.createUsers({

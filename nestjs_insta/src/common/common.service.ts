@@ -1,17 +1,20 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { BasePaginationDto } from './dto/basic-pagination.dto';
-import { BaseModel } from './entity/base.entity';
 import {
   FindManyOptions,
   FindOptionsOrder,
   FindOptionsWhere,
   Repository,
 } from 'typeorm';
+import { ConfigService } from '@nestjs/config';
+import { BasePaginationDto } from './dto/basic-pagination.dto';
+import { BaseModel } from './entity/base.entity';
 import { FILTER_MAPPER } from './const/filter-mappter.const';
-import { HOST, PROTOCOL } from './const/env.const';
+import { ENV_HOST_KEY, ENV_PROTOCOL_KEY } from './const/env-keys.consts';
 
 @Injectable()
 export class CommonService {
+  constructor(private readonly configService: ConfigService) {}
+
   paginate<T extends BaseModel>(
     dto: BasePaginationDto,
     repository: Repository<T>,
@@ -20,9 +23,8 @@ export class CommonService {
   ) {
     if (dto.page) {
       return this.pagePaginate(dto, repository, overrideFindOptions);
-    } else {
-      return this.cursorPaginate(dto, repository, overrideFindOptions, path);
     }
+    return this.cursorPaginate(dto, repository, overrideFindOptions, path);
   }
 
   private async pagePaginate<T extends BaseModel>(
@@ -38,7 +40,7 @@ export class CommonService {
     });
 
     return {
-      data: data,
+      data,
       total: count,
     };
   }
@@ -68,7 +70,10 @@ export class CommonService {
         ? results[results.length - 1]
         : null;
 
-    const nextUrl = lastItem && new URL(`${PROTOCOL}://${HOST}/${path}`);
+    const protocol = this.configService.get<string>(ENV_PROTOCOL_KEY);
+    const host = this.configService.get<string>(ENV_HOST_KEY);
+
+    const nextUrl = lastItem && new URL(`${protocol}://${host}/${path}`);
     if (nextUrl) {
       // dto의 key값들을 순회하면서 키값에 해당되는 값이 존재하면 param에 붙여넣는다
       // 단, 'where__id__more_than' 값만 lastItem의 마지막값으로 넣어준다.
@@ -167,7 +172,7 @@ export class CommonService {
      *
      * -> ['where', 'id', 'more_than']으로 나눌 수 있다.
      *
-     **/
+     * */
     const split = key.split('__');
 
     if (split.length !== 2 && split.length !== 3) {
@@ -188,7 +193,7 @@ export class CommonService {
        *  }
        * }
        *
-       **/
+       * */
       // ['where', 'id']
       const [_, field] = split;
 
@@ -205,7 +210,7 @@ export class CommonService {
        * FILTER_MAPPER에 미리 정의해둔 값들로 field값에 FILTER_MAPPER에서 해당되는 유틸리티를 가져온 후
        * 값에 적용
        *
-       **/
+       * */
 
       // ['where', 'id', 'more_than']
       const [_, field, operator] = split;

@@ -17,7 +17,6 @@ export const lengthValidationMessage = (args: ValidationArguments) => {
    */
   if (args.constraints.length === 2) {
     return `Please enter a ${args.property} between ${args.constraints[0]} and ${args.constraints[1]} character.`;
-  } else {
-    return `Please enter a ${args.property} at least ${args.constraints[0]} character`;
   }
+  return `Please enter a ${args.property} at least ${args.constraints[0]} character`;
 };

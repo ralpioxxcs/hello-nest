@@ -1,59 +1,48 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, LessThan, MoreThan, Repository } from 'typeorm';
-import { PostsModel } from './entities/posts.entity';
-import { CreatePostDto } from './dto/create-post.dto';
-import { UpdatePostDto } from './dto/update-post.dto';
-import { PaginatePostDto } from './dto/pagainate-post.dto';
-import { HOST, PROTOCOL } from 'src/common/const/env.const';
+import {
+  FindOptionsWhere,
+  LessThan,
+  MoreThan,
+  QueryRunner,
+  Repository,
+} from 'typeorm';
 import { CommonService } from 'src/common/common.service';
-// interface PostModel {
-//     id: number;
-//     author: string;
-//     title: string;
-//     content: string;
-//     likeCount: number;
-//     commentCount: number;
-// };
-
-// let posts: PostModel[] = [
-//     {
-//         id: 1,
-//         author: 'newjeans',
-//         title: 'minji',
-//         content: 'asdasd',
-//         likeCount: 100000,
-//         commentCount: 2323,
-//     },
-//     {
-//         id: 2,
-//         author: 'newjeans',
-//         title: 'haerin',
-//         content: 'asdbnlzx',
-//         likeCount: 42552,
-//         commentCount: 323,
-//     },
-//     {
-//         id: 3,
-//         author: 'blackpink',
-//         title: 'roze',
-//         content: 'kasddbnlzx',
-//         likeCount: 62352,
-//         commentCount: 9523,
-//     },
-// ]
+import {
+  ENV_HOST_KEY,
+  ENV_PROTOCOL_KEY,
+} from 'src/common/const/env-keys.consts';
+import { ConfigService } from '@nestjs/config';
+import { basename, join } from 'path';
+import { POST_IMAGE_PATH, TEMP_FOLDER_PATH } from 'src/common/const/path.const';
+import { promises } from 'fs';
+import { PaginatePostDto } from './dto/pagainate-post.dto';
+import { UpdatePostDto } from './dto/update-post.dto';
+import { CreatePostDto } from './dto/create-post.dto';
+import { PostsModel } from './entities/posts.entity';
+import { CreatePostImageDto } from './image/dto/create-image.dto';
+import { ImageModel } from 'src/common/entity/image.entity';
+import { DEFAULT_POST_FIND_OPTIONS } from './const/default-post-find-options.const';
+import { getPriority } from 'os';
 
 @Injectable()
 export class PostsService {
   constructor(
     @InjectRepository(PostsModel)
     private readonly postsRepository: Repository<PostsModel>,
+    @InjectRepository(ImageModel)
+    private readonly imageRepository: Repository<ImageModel>,
     private readonly commonService: CommonService,
+    private readonly configService: ConfigService,
   ) {}
 
   async getAllPosts() {
     return this.postsRepository.find({
-      relations: ['author'],
+      ...DEFAULT_POST_FIND_OPTIONS,
     });
   }
 
@@ -62,6 +51,7 @@ export class PostsService {
       await this.createPost(userId, {
         title: `random post ${index}`,
         content: `random content ${index}`,
+        images: [],
       });
     }
   }
@@ -71,7 +61,7 @@ export class PostsService {
       dto,
       this.postsRepository,
       {
-        relations: ['author'],
+        ...DEFAULT_POST_FIND_OPTIONS,
       },
       'posts',
     );
@@ -85,7 +75,7 @@ export class PostsService {
      *
      *  [1] [2] [3] [4] ... [n]
      *
-     **/
+     * */
     const [posts, count] = await this.postsRepository.findAndCount({
       skip: dto.take * (dto.page - 1),
       take: dto.take,
@@ -129,7 +119,10 @@ export class PostsService {
         ? posts[posts.length - 1]
         : null;
 
-    const nextUrl = lastItem && new URL(`${PROTOCOL}://${HOST}/posts`);
+    const protocol = this.configService.get<string>(ENV_PROTOCOL_KEY);
+    const host = this.configService.get<string>(ENV_HOST_KEY);
+
+    const nextUrl = lastItem && new URL(`${protocol}://${host}/posts`);
     if (nextUrl) {
       // dto의 key값들을 순회하면서 키값에 해당되는 값이 존재하면 param에 붙여넣는다
       // 단, 'where__id_more_than' 값만 lastItem의 마지막값으로 넣어준다.
@@ -177,10 +170,10 @@ export class PostsService {
 
   async getPostById(id: number) {
     const post = await this.postsRepository.findOne({
+      ...DEFAULT_POST_FIND_OPTIONS,
       where: {
         id,
       },
-      relations: ['author'],
     });
 
     if (!post) {
@@ -190,17 +183,26 @@ export class PostsService {
     return post;
   }
 
-  async createPost(authorId: number, postDto: CreatePostDto) {
-    const post = this.postsRepository.create({
+  getRepository(qr?: QueryRunner) {
+    return qr
+      ? qr.manager.getRepository<PostsModel>(PostsModel)
+      : this.postsRepository;
+  }
+
+  async createPost(authorId: number, postDto: CreatePostDto, qr?: QueryRunner) {
+    const repo = this.getRepository(qr);
+
+    const post = repo.create({
       author: {
         id: authorId,
       },
       ...postDto,
+      images: [],
       likeCount: 0,
       commentCount: 0,
     });
 
-    const newPost = await this.postsRepository.save(post);
+    const newPost = await repo.save(post);
 
     return newPost;
   }

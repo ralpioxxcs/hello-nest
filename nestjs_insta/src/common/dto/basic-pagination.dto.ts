@@ -11,7 +11,7 @@ export class BasePaginationDto {
 
   // 이전 마지막 데이터의 ID
   // 이 프로퍼티에 입력된 ID 보다 높은 ID값을 가져옴
-  //@Type(()=> Number)
+  // @Type(()=> Number)
   @IsNumber()
   @IsOptional()
   where__id__more_than?: number;

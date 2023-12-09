@@ -14,12 +14,12 @@ export class UsersController {
   /**
    *    serialization(직렬화) -> 현재 시스템에서 사용되는 데이터 구조를 다른 시스템에서도 쉽게 사용할 수 있는 포맷으로 변환 (class object -> JSON format)
    *    deserialization(역직렬화)
-   **/
+   * */
   getUsers() {
     return this.usersService.getAllUsers();
   }
 
-/* 
+  /* 
   @Post()
   postUser(
     @Body('nickname') nickname :string,

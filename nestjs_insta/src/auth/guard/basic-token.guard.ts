@@ -19,7 +19,7 @@ import { AuthService } from '../auth.service';
  *  5) 찾아낸 사용자를 (1) 요청 객체에 붙여준다
  *     req.user = user;
  *
- **/
+ * */
 
 @Injectable()
 export class BasicTokenGuard implements CanActivate {
