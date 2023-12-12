@@ -5,6 +5,7 @@ import {
   ManyToMany,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { PostsModel } from 'src/posts/entities/posts.entity';
@@ -18,6 +19,7 @@ import path from 'path';
 import { RolesEnum } from '../const/roles.const';
 import { ChatsModel } from 'src/chats/entity/chats.entity';
 import { MessagesModel } from 'src/chats/messages/entity/messages.entity';
+import { CommentsModel } from 'src/posts/comments/entity/comments.entity';
 
 @Entity()
 @Exclude()
@@ -97,4 +99,7 @@ export class UsersModel extends BaseModel {
 
   @OneToMany(() => MessagesModel, (message) => message.author)
   messages: MessagesModel;
+
+  @OneToMany(() => CommentsModel, (comment) => comment.author)
+  comments: CommentsModel[];
 }

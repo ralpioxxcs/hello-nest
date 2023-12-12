@@ -24,5 +24,6 @@ import { LogMiddleware } from 'src/common/middleware/log.middleware';
   ],
   controllers: [PostsController],
   providers: [PostsService, PostImagesService], // It is managed by IoC container
+  exports: [PostsService],
 })
 export class PostsModule {}

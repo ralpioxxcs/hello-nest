@@ -14,6 +14,7 @@ import { Transform } from 'class-transformer';
 import { POST_PUBLIC_IMAGE_PATH } from 'src/common/const/path.const';
 import { join } from 'path';
 import { ImageModel } from 'src/common/entity/image.entity';
+import { CommentsModel } from '../comments/entity/comments.entity';
 
 @Entity()
 export class PostsModel extends BaseModel {
@@ -47,10 +48,12 @@ export class PostsModel extends BaseModel {
 
   @OneToMany((type) => ImageModel, (image) => image.post)
   images: ImageModel[];
-
-  @Column()
+@Column()
   likeCount: number;
 
   @Column()
   commentCount: number;
+
+  @OneToMany(() => CommentsModel, (comment) => comment.post)
+  comments: CommentsModel[];
 }

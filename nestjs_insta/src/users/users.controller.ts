@@ -5,6 +5,9 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
+import { RolesEnum } from './const/roles.const';
+import { Roles } from './decorator/roles.decorator';
+import { IsPublic } from 'src/common/decorator/is-public.decorator';
 
 @Controller('users')
 export class UsersController {
@@ -19,7 +22,7 @@ export class UsersController {
     return this.usersService.getAllUsers();
   }
 
-  /* 
+  /*
   @Post()
   postUser(
     @Body('nickname') nickname :string,
