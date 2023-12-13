@@ -10,9 +10,6 @@ import {
 
 import { IsString } from 'class-validator';
 import { stringValidationMessage } from 'src/common/validation-message/string-validation.message';
-import { Transform } from 'class-transformer';
-import { POST_PUBLIC_IMAGE_PATH } from 'src/common/const/path.const';
-import { join } from 'path';
 import { ImageModel } from 'src/common/entity/image.entity';
 import { CommentsModel } from '../comments/entity/comments.entity';
 
@@ -48,7 +45,7 @@ export class PostsModel extends BaseModel {
 
   @OneToMany((type) => ImageModel, (image) => image.post)
   images: ImageModel[];
-@Column()
+  @Column()
   likeCount: number;
 
   @Column()

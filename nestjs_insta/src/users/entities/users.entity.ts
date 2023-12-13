@@ -20,19 +20,13 @@ import { RolesEnum } from '../const/roles.const';
 import { ChatsModel } from 'src/chats/entity/chats.entity';
 import { MessagesModel } from 'src/chats/messages/entity/messages.entity';
 import { CommentsModel } from 'src/posts/comments/entity/comments.entity';
+import { UserFollowersModel } from './user-followers.entity';
 
 @Entity()
-@Exclude()
 export class UsersModel extends BaseModel {
-  @PrimaryGeneratedColumn()
-  @Expose()
-  id: number;
-
   @Column({
-    // 1. 최대길이 20
-    length: 20,
-    // 2. 유일무이한 값
-    unique: true,
+    length: 20, // 1. 최대길이 20
+    unique: true, // 2. 유일무이한 값
   })
   @IsString({
     message: stringValidationMessage,
@@ -40,7 +34,6 @@ export class UsersModel extends BaseModel {
   @Length(3, 20, {
     message: lengthValidationMessage,
   })
-  @Expose()
   nickname: string;
 
   // 1. 유일무이한 값
@@ -56,7 +49,6 @@ export class UsersModel extends BaseModel {
       message: emailValidationMessage,
     },
   )
-  @Expose()
   email: string;
 
   @Column()
@@ -102,4 +94,26 @@ export class UsersModel extends BaseModel {
 
   @OneToMany(() => CommentsModel, (comment) => comment.author)
   comments: CommentsModel[];
+
+  //
+  // Follow
+  //
+
+  // 나를 팔로우하고 있는 사람
+  @OneToMany(() => UserFollowersModel, (ufm) => ufm.follower)
+  followers: UserFollowersModel[];
+
+  // 내가 팔로우 하고있는 사람
+  @OneToMany(() => UserFollowersModel, (ufm) => ufm.followee)
+  followees: UserFollowersModel[];
+
+  @Column({
+    default: 0
+  })
+  followerCount: number;
+
+  @Column({
+    default: 0
+  })
+  followeeCount: number;
 }

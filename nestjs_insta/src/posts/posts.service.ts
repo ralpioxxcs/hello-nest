@@ -191,6 +191,28 @@ export class PostsService {
       : this.postsRepository;
   }
 
+  async incrementCommentCount(postId: number, qr?: QueryRunner) {
+    const repo = this.getRepository(qr);
+    await repo.increment(
+      {
+        id: postId,
+      },
+      'commentCount',
+      1,
+    );
+  }
+
+  async decrementCommentCount(postId: number, qr?: QueryRunner) {
+    const repo = this.getRepository(qr);
+    await repo.decrement(
+      {
+        id: postId,
+      },
+      'commentCount',
+      1,
+    );
+  }
+
   async createPost(authorId: number, postDto: CreatePostDto, qr?: QueryRunner) {
     const repo = this.getRepository(qr);
 

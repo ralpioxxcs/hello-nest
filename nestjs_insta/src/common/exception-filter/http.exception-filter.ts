@@ -14,7 +14,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const status = exception.getStatus();
 
     // 로그 파일 생성 or 에러 모니터링 시스템 API call
-
     res.status(status).json({
       statusCode: status,
       message: exception.message,

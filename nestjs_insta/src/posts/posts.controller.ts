@@ -42,7 +42,6 @@ export class PostsController {
    * @returns
    */
   @Get()
-  @IsPublic()
   getPosts(@Query() query: PaginatePostDto) {
     return this.postsService.paginatePosts(query);
   }
