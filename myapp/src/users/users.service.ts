@@ -9,13 +9,20 @@ import { UpdateUserDto } from './dtos/update-user.dto';
 export class UsersService {
   constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
-    const createdUser = new this.userModel(createUserDto);
-    return await createdUser.save();
+  async createUser(createUserDto: CreateUserDto) {
+    const newUserDoc = await this.userModel.create(createUserDto);
+    if (!newUserDoc) {
+      throw new BadRequestException('');
+    }
+    return await newUserDoc.save();
   }
 
   async findAll(): Promise<User[]> {
     return await this.userModel.find().populate('posts').exec();
+  }
+
+  async getUserByEmail(email: string) {
+    return await this.userModel.findOne({ email }).exec();
   }
 
   async updateUser(id: string, dto: UpdateUserDto): Promise<User> {
