@@ -13,6 +13,8 @@ import {
 } from './common/const/env-keys.consts';
 import { PostsModule } from './posts/posts.module';
 import { AuthModule } from './auth/auth.module';
+import { TodosModule } from './todos/todos.module';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -38,8 +40,14 @@ import { AuthModule } from './auth/auth.module';
     UsersModule,
     PostsModule,
     AuthModule,
+    TodosModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService,
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: AccessTokenGuard,
+    // },
+  ],
 })
 export class AppModule {}

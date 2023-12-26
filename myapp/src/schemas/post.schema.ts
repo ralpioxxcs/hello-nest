@@ -9,6 +9,9 @@ export type SchemaDocument = HydratedDocument<Post>;
   timestamps: true,
 })
 export class Post {
+
+  _id: Types.ObjectId;
+
   @Prop({
     type: SchemaTypes.ObjectId,
     ref: 'User',
@@ -23,13 +26,6 @@ export class Post {
   @Prop({ required: true })
   @IsString()
   content: string;
-
-  // @Prop({
-  //   type: [SchemaTypes.ObjectId],
-  //
-  //
-  // })
-  // images: Types.ObjectId;
 }
 
 export const PostSchema = SchemaFactory.createForClass(Post);

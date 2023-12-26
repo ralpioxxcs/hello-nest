@@ -1,4 +1,12 @@
-import { Body, Controller, Delete, Get, Param, Patch } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Logger,
+  Param,
+  Patch,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dtos/update-user.dto';
 
@@ -6,18 +14,21 @@ import { UpdateUserDto } from './dtos/update-user.dto';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Get()
-  getUsers() {
-    return this.usersService.findAll();
+  private readonly logger = new Logger(UsersController.name);
+
+  @Get(':email')
+  getUserInfoByEmail(@Param('email') email: string) {
+    this.logger.verbose(`email: ${email}`);
+    return this.usersService.getByEmail(email);
   }
 
   @Patch(':id')
   patchUser(@Param('id') id: string, @Body() body: UpdateUserDto) {
-    return this.usersService.updateUser(id, body);
+    return this.usersService.update(id, body);
   }
 
   @Delete(':id')
   deleteUser(@Param('id') id: string) {
-    return this.usersService.deleteUser(id);
+    return this.usersService.delete(id);
   }
 }

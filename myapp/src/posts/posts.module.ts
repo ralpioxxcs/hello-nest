@@ -4,10 +4,12 @@ import { PostsController } from './posts.controller';
 import { APP_PIPE } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Post, PostSchema } from 'src/schemas/post.schema';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Post.name, schema: PostSchema }]),
+    AuthModule,
   ],
   controllers: [PostsController],
   providers: [

@@ -3,13 +3,17 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import * as ts from 'tunnel-ssh';
 import {
-    ENV_NODE_ENV,
+  ENV_NODE_ENV,
   ENV_SSH_TUNNEL_FORWARDED_PORT,
   ENV_SSH_TUNNEL_SERVER_HOST,
   ENV_SSH_TUNNEL_SERVER_PASSWORD,
   ENV_SSH_TUNNEL_SERVER_PORT,
   ENV_SSH_TUNNEL_SERVER_USERNAME,
 } from './common/const/env-keys.consts';
+
+import { Transport, MicroserviceOptions } from '@nestjs/microservices';
+import { join } from 'path';
+import * as grpc from '@grpc/grpc-js';
 
 async function bootstrap() {
   if (process.env[ENV_NODE_ENV] === 'local') {
@@ -52,5 +56,18 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
 
   await app.listen(3000);
+
+  const grpcMicroService =
+    await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
+      transport: Transport.GRPC,
+      options: {
+        url: '0.0.0.0:50005',
+        package: 'todoPacakge', // protobuf 패키지 명
+        protoPath: join(__dirname, '../src/proto/todo.proto'),
+        credentials: grpc.ServerCredentials.createInsecure(),
+      },
+    });
+
+  await grpcMicroService.listen();
 }
 bootstrap();
